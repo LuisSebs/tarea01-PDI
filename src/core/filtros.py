@@ -530,7 +530,7 @@ class FiltroBrillo:
 
     def remover_widgets(self):
         """
-            Remueve los widgets creados
+            Elimina los widgets creados
         """
         self.tkinter_app.deslizador.destroy()
     
@@ -711,8 +711,10 @@ class FiltroMosaico:
             orient=HORIZONTAL,
             command=self.on_change
         )
+        # Valor por defecto
+        self.tkinter_app.deslizador.set(2)
         # Lo agregamos a la interfaz
-        self.tkinter_app.deslizador.pack()
+        self.tkinter_app.deslizador.pack(pady=12)
 
     def on_change(self, factor):
         """
@@ -724,4 +726,7 @@ class FiltroMosaico:
         self.tkinter_app.mostrar_imagenes()
 
     def remover_widgets(self):
+        """
+            Elimina los widgets creados
+        """
         self.tkinter_app.deslizador.destroy()
