@@ -23,6 +23,5 @@ python main.py
 python3 main.py
 ```
 
-<<<<<<< HEAD
 Esto abrira una interfaz donde podras cargar una imagen y comenzar a aplicar filtros. Recomiendo probar con alguna de las imagenes que se encuentran en la carpeta `imgs/` de este proyecto.
 
