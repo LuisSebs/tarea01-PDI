@@ -1,6 +1,6 @@
 # Tarea01 - Filtro de imagenes
 
-## Autor: Arrieta Mancera Luis Sebastian
+## Autor: Arrieta Mancera Luis Sebastian (318174116)
 
 Procesamiento digital de imagenes con python.
 
@@ -23,5 +23,5 @@ python main.py
 python3 main.py
 ```
 
-Esto abrira una interfaz donde podras cargar una imagen y comenzar a aplicar filtros. Recomiendo probar con alguna de las imagenes que se encuentran en la carpeta `imgs/` de este proyecto.
+Esto abrirá una interfaz donde podras cargar una imagen y comenzar a aplicar filtros. Recomiendo probar con alguna de las imagenes que se encuentran en la carpeta `imgs/` de este proyecto.
 
