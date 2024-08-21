@@ -1,5 +1,8 @@
+import numpy as np
 from PIL import Image
 from tkinter import Scale, HORIZONTAL, VERTICAL, Label, Entry, Frame
+
+# -- TAREA 01 --
 
 # Filtro Original
 def filtro_original(imagen: Image):
@@ -435,6 +438,82 @@ def filtro_mosaico(imagen: Image, size: tuple):
                 nueva_imagen.putpixel(ubicacion, nuevo_pixel)
 
     return nueva_imagen
+
+# -- TAREA 02 --
+
+def filtro_blur(imagen: Image, size):
+
+    # Borroso
+    # matriz = [
+    #     [0.0, 0.9, 0.0],
+    #     [0.9, 0.9, 0.9],
+    #     [0.0, 0.9, 0.0]
+    # ]
+
+    # Mas Borroso
+    # matriz = [
+    #     [0, 0, 1, 0, 0],
+    #     [0, 1, 1, 1, 0],
+    #     [1, 1, 1, 1, 1],
+    #     [0, 1, 1, 1, 0],
+    #     [0, 0, 1, 0, 0]
+    # ]
+
+    matriz = np.ones((size, size), dtype=np.float32) / float(size * size)
+
+    # Tamaño de la imagen
+    size_x, size_y = imagen.size
+
+    # Nueva imagen
+    nueva_imagen = Image.new(mode="RGB", size=(size_x, size_y))
+
+    # Tamaño de la matriz (debe ser matriz cuadrada impar)
+    size_matriz = len(matriz)
+    # Desplazamiento de x,y para encontrar el pixel del centro
+    displacement = len(matriz) // 2
+
+    for x in range(imagen.width - (size_matriz - 1)):        
+        for y in range(imagen.height - (size_matriz - 1)):
+            r_total = 0
+            g_total = 0
+            b_total = 0
+            suma_de_los_pesos = 0
+            for i in range(size_matriz):
+                for j in range(size_matriz):
+                    if ((x + i) < imagen.width) and ((y + j) < imagen.height):
+                        ubicacion = ((x + i),(y + j))            
+                        pixel = imagen.getpixel(ubicacion)                        
+                        # Desestructuracion del pixel
+                        r, g, b = pixel
+                        # Pesos de la matriz de convolucion
+                        peso = matriz[i][j]
+                        # Sumar de los valores ponderados
+                        r_total += r * peso
+                        g_total += g * peso
+                        b_total += b * peso
+                        suma_de_los_pesos += peso
+
+            # Evitamos la division entre cero
+            if suma_de_los_pesos != 0:
+                r_total =  r_total / suma_de_los_pesos
+                g_total =  g_total / suma_de_los_pesos
+                b_total =  b_total / suma_de_los_pesos
+            
+            # Clampeamos los valores (que esten entre 0 y 255)
+            r_total = min(max(0, int(r_total)), 255)
+            g_total = min(max(0, int(g_total)), 255)
+            b_total = min(max(0, int(b_total)), 255)
+
+            # Asignamos en el pixel de enmedio el nuevo valor
+            nuevo_pixel = (r_total, g_total, b_total)
+            nueva_imagen.putpixel((x + displacement, y + displacement), nuevo_pixel)
+
+    return nueva_imagen
+
+imagen = Image.open('../imgs/perrito.jpg')
+filtro_blur(imagen,7).show()
+
+
 
 class FiltroOriginal:
 
