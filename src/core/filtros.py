@@ -441,25 +441,50 @@ def filtro_mosaico(imagen: Image, size: tuple):
 
 # -- TAREA 02 --
 
-def filtro_blur(imagen: Image, size):
+def filtro_blur(imagen: Image, size: int=1, valor: float=0.2):
+    """
+    Funcion que aplica el filtro blur a una imagen y regresa una copia de la imagen con el filtro aplicado. El tamaño de la matriz sera (2 * size + 1)
 
-    # Borroso
+    Parameters :
+    ------------
+
+    imagen: 
+        Imagen en formato Pillow.
+
+    size:
+        tamaño de la matriz default 1
+
+    valor:
+        valor de las entradas de la matriz default 0.2
+
+    Returns :
+    ---------
+
+    Pillow imagen con el filtro blur aplicado.
+    """
+
+    
+    # Hacemos el tamaño de la matriz un numero impar
+    n = (2 * size) + 1
+    
+    # Inicializamos la matriz
+    matriz = [[0] * n for _ in range(n)]
+    
+    # La matriz tiene esta forma:
     # matriz = [
-    #     [0.0, 0.9, 0.0],
-    #     [0.9, 0.9, 0.9],
-    #     [0.0, 0.9, 0.0]
+    #     [0.0, 0.2, 0.0],
+    #     [0.2, 0.2, 0.2],
+    #     [0.0, 0.2, 0.0]
     # ]
 
-    # Mas Borroso
-    # matriz = [
-    #     [0, 0, 1, 0, 0],
-    #     [0, 1, 1, 1, 0],
-    #     [1, 1, 1, 1, 1],
-    #     [0, 1, 1, 1, 0],
-    #     [0, 0, 1, 0, 0]
-    # ]
-
-    matriz = np.ones((size, size), dtype=np.float32) / float(size * size)
+    # Llenar la matriz con forma de estrella
+    for i in range(n):
+        for j in range(n):
+            # Configura el patrón en función de la posición
+            if i == n // 2 or j == n // 2:
+                matriz[i][j] = valor
+            elif (i == n // 2 - 1 or i == n // 2 + 1) and (j == n // 2 - 1 or j == n // 2 + 1):
+                matriz[i][j] = 0 # Rellenamos con ceros
 
     # Tamaño de la imagen
     size_x, size_y = imagen.size
@@ -482,11 +507,11 @@ def filtro_blur(imagen: Image, size):
                 for j in range(size_matriz):
                     if ((x + i) < imagen.width) and ((y + j) < imagen.height):
                         ubicacion = ((x + i),(y + j))            
-                        pixel = imagen.getpixel(ubicacion)                        
+                        pixel = imagen.getpixel(ubicacion)
+                        # Peso del pixel correspondiente
+                        peso = matriz[i][j]                    
                         # Desestructuracion del pixel
                         r, g, b = pixel
-                        # Pesos de la matriz de convolucion
-                        peso = matriz[i][j]
                         # Sumar de los valores ponderados
                         r_total += r * peso
                         g_total += g * peso
@@ -495,9 +520,9 @@ def filtro_blur(imagen: Image, size):
 
             # Evitamos la division entre cero
             if suma_de_los_pesos != 0:
-                r_total =  r_total / suma_de_los_pesos
-                g_total =  g_total / suma_de_los_pesos
-                b_total =  b_total / suma_de_los_pesos
+                r_total =  r_total / suma_de_los_pesos # Promedio rojo
+                g_total =  g_total / suma_de_los_pesos # Promedio verde
+                b_total =  b_total / suma_de_los_pesos # Promedio azul
             
             # Clampeamos los valores (que esten entre 0 y 255)
             r_total = min(max(0, int(r_total)), 255)
@@ -510,10 +535,249 @@ def filtro_blur(imagen: Image, size):
 
     return nueva_imagen
 
-imagen = Image.open('../imgs/perrito.jpg')
-filtro_blur(imagen,7).show()
+def filtro_motion_blur(imagen: Image, size: int=4):
+    """
+    Funcion que aplica el filtro motion blur a una imagen y regresa una copia de la imagen con el filtro aplicado. El tamaño de la matriz sera (2 * size + 1)
 
+    Parameters :
+    ------------
 
+    imagen: 
+        Imagen en formato Pillow.
+
+    size:
+        tamaño de la matriz
+
+    Returns :
+    ---------
+
+    Pillow imagen con el filtro motion blur aplicado.
+    """
+
+    # Hacemos el tamaño de la matriz un numero impar
+    n = (2 * size) + 1
+
+    # Matriz identidad
+    matriz = np.eye(n, dtype=int)
+
+    print(matriz)
+
+    # Tamaño de la imagen
+    size_x, size_y = imagen.size
+
+    # Nueva imagen
+    nueva_imagen = Image.new(mode="RGB", size=(size_x, size_y))
+
+    # Tamaño de la matriz (debe ser matriz cuadrada impar)
+    size_matriz = len(matriz)
+    # Desplazamiento de x,y para encontrar el pixel del centro
+    displacement = len(matriz) // 2
+
+    for x in range(imagen.width - (size_matriz - 1)):        
+        for y in range(imagen.height - (size_matriz - 1)):
+            r_total = 0
+            g_total = 0
+            b_total = 0
+            suma_de_los_pesos = 0
+            for i in range(size_matriz):
+                for j in range(size_matriz):
+                    if ((x + i) < imagen.width) and ((y + j) < imagen.height):
+                        ubicacion = ((x + i),(y + j))            
+                        pixel = imagen.getpixel(ubicacion)
+                        # Peso de la casilla correspondiente
+                        peso = matriz[i][j]                     
+                        # Desestructuracion del pixel
+                        r, g, b = pixel
+                        # Sumar de los valores ponderados
+                        r_total += r * peso
+                        g_total += g * peso
+                        b_total += b * peso
+                        suma_de_los_pesos += peso
+
+            # Evitamos la division entre cero
+            if suma_de_los_pesos != 0:
+                r_total =  r_total / suma_de_los_pesos # Promedio rojo
+                g_total =  g_total / suma_de_los_pesos # Promedio verde
+                b_total =  b_total / suma_de_los_pesos # Promedio azul
+            
+            # Clampeamos los valores (que esten entre 0 y 255)
+            r_total = min(max(0, int(r_total)), 255)
+            g_total = min(max(0, int(g_total)), 255)
+            b_total = min(max(0, int(b_total)), 255)
+
+            # Asignamos en el pixel de enmedio el nuevo valor
+            nuevo_pixel = (r_total, g_total, b_total)
+            nueva_imagen.putpixel((x + displacement, y + displacement), nuevo_pixel)
+
+    return nueva_imagen
+
+def filtro_sharpen(imagen: Image, tipo: str='normal'):
+    """
+    Funcion que aplica el filtro sharpen a una imagen y regresa una copia de la imagen con el filtro aplicado. El tamaño de la matriz sera (2 * size + 1)
+
+    Parameters :
+    ------------
+
+    imagen: 
+        Imagen en formato Pillow.
+
+    tipo:
+        tipo de sharpen por default normal:
+            + soft
+            + normal
+            + hard
+
+    Returns :
+    ---------
+
+    Pillow imagen con el filtro sharpen aplicado.
+    """
+
+    matriz = []
+
+    if tipo == 'soft':
+        matriz = [
+            [-1, -1, -1, -1, -1],
+            [-1,  2,  2,  2, -1],
+            [-1,  2,  8,  2, -1],
+            [-1,  2,  2,  2, -1],
+            [-1, -1, -1, -1, -1]
+        ]
+    elif tipo == 'hard':
+        matriz = [
+            [1,  1,  1],
+            [1, -7,  1],
+            [1,  1,  1]
+        ]
+    else: # Normal
+        matriz = [
+            [-1, -1, -1],
+            [-1,  9, -1],
+            [-1, -1, -1]
+        ]
+
+    # Tamaño de la imagen
+    size_x, size_y = imagen.size
+
+    # Nueva imagen
+    nueva_imagen = Image.new(mode="RGB", size=(size_x, size_y))
+
+    # Tamaño de la matriz (debe ser matriz cuadrada impar)
+    size_matriz = len(matriz)
+    # Desplazamiento de x,y para encontrar el pixel del centro
+    displacement = len(matriz) // 2
+
+    for x in range(imagen.width - (size_matriz - 1)):        
+        for y in range(imagen.height - (size_matriz - 1)):
+            r_total = 0
+            g_total = 0
+            b_total = 0
+            suma_de_los_pesos = 0
+            for i in range(size_matriz):
+                for j in range(size_matriz):
+                    if ((x + i) < imagen.width) and ((y + j) < imagen.height):
+                        ubicacion = ((x + i),(y + j))            
+                        pixel = imagen.getpixel(ubicacion)
+                        # Peso del pixel correspondiente
+                        peso = matriz[i][j]                    
+                        # Desestructuracion del pixel
+                        r, g, b = pixel
+                        # Sumar de los valores ponderados
+                        r_total += r * peso
+                        g_total += g * peso
+                        b_total += b * peso
+                        suma_de_los_pesos += peso
+
+            # Evitamos la division entre cero
+            if suma_de_los_pesos != 0:
+                r_total =  r_total / suma_de_los_pesos # Promedio rojo
+                g_total =  g_total / suma_de_los_pesos # Promedio verde
+                b_total =  b_total / suma_de_los_pesos # Promedio azul
+            
+            # Clampeamos los valores (que esten entre 0 y 255)
+            r_total = min(max(0, int(r_total)), 255)
+            g_total = min(max(0, int(g_total)), 255)
+            b_total = min(max(0, int(b_total)), 255)
+
+            # Asignamos en el pixel de enmedio el nuevo valor
+            nuevo_pixel = (r_total, g_total, b_total)
+            nueva_imagen.putpixel((x + displacement, y + displacement), nuevo_pixel)
+
+    return nueva_imagen
+
+def filtro_promedio(imagen: Image, size: int=1):
+    """
+    Funcion que aplica el filtro promedio a una imagen y regresa una copia de la imagen con el filtro aplicado. El tamaño de la matriz sera (2 * size + 1)
+
+    Parameters :
+    ------------
+
+    imagen: 
+        Imagen en formato Pillow.
+
+    size:
+        tamaño de la matriz default 1
+
+    Returns :
+    ---------
+
+    Pillow imagen con el filtro promedio aplicado.
+    """
+
+    # Hacemos el tamaño de la matriz un numero impar
+    n = (2 * size) + 1
+
+    # Matriz cuadrada impar llena de 1's
+    matriz = np.ones((n, n), dtype=np.float32) / float(n * n)
+
+    # Tamaño de la imagen
+    size_x, size_y = imagen.size
+
+    # Nueva imagen
+    nueva_imagen = Image.new(mode="RGB", size=(size_x, size_y))
+
+    # Tamaño de la matriz (debe ser matriz cuadrada impar)
+    size_matriz = len(matriz)
+    # Desplazamiento de x,y para encontrar el pixel del centro
+    displacement = len(matriz) // 2
+
+    for x in range(imagen.width - (size_matriz - 1)):        
+        for y in range(imagen.height - (size_matriz - 1)):
+            r_total = 0
+            g_total = 0
+            b_total = 0
+            suma_de_los_pesos = 0
+            for i in range(size_matriz):
+                for j in range(size_matriz):
+                    if ((x + i) < imagen.width) and ((y + j) < imagen.height):
+                        ubicacion = ((x + i),(y + j))            
+                        pixel = imagen.getpixel(ubicacion)
+                        # Peso del pixel correspondiente
+                        peso = matriz[i][j]                    
+                        # Desestructuracion del pixel
+                        r, g, b = pixel
+                        # Sumar de los valores ponderados
+                        r_total += r * peso
+                        g_total += g * peso
+                        b_total += b * peso
+                        suma_de_los_pesos += peso
+
+            # Evitamos la division entre cero
+            if suma_de_los_pesos != 0:
+                r_total =  r_total / suma_de_los_pesos # Promedio rojo
+                g_total =  g_total / suma_de_los_pesos # Promedio verde
+                b_total =  b_total / suma_de_los_pesos # Promedio azul
+            
+            # Clampeamos los valores (que esten entre 0 y 255)
+            r_total = min(max(0, int(r_total)), 255)
+            g_total = min(max(0, int(g_total)), 255)
+            b_total = min(max(0, int(b_total)), 255)
+
+            # Asignamos en el pixel de enmedio el nuevo valor
+            nuevo_pixel = (r_total, g_total, b_total)
+            nueva_imagen.putpixel((x + displacement, y + displacement), nuevo_pixel)
+
+    return nueva_imagen
 
 class FiltroOriginal:
 
