@@ -20,7 +20,11 @@ class App(Tk):
         'Bajo contraste': FiltroBajoContraste,
         'Negativo': FiltroNegativo,
         'Mica': FiltroMica,
-        'Mosaico': FiltroMosaico
+        'Mosaico': FiltroMosaico,
+        'Blur': FiltroBlur,
+        'Motion Blur': FiltroMotionBlur,
+        'Sharpen': FiltroSharpen,
+        'Promedio': FiltroPromedio
     }
 
     def __init__(self):

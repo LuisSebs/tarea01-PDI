@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from tkinter import Scale, HORIZONTAL, VERTICAL, Label, Entry, Frame
+from tkinter import Scale, HORIZONTAL, VERTICAL, Label, Entry, Frame, ttk
 
 # -- TAREA 01 --
 
@@ -546,7 +546,7 @@ def filtro_motion_blur(imagen: Image, size: int=4):
         Imagen en formato Pillow.
 
     size:
-        tamaño de la matriz
+        tamaño de la matriz default 4
 
     Returns :
     ---------
@@ -559,8 +559,6 @@ def filtro_motion_blur(imagen: Image, size: int=4):
 
     # Matriz identidad
     matriz = np.eye(n, dtype=int)
-
-    print(matriz)
 
     # Tamaño de la imagen
     size_x, size_y = imagen.size
@@ -1073,3 +1071,93 @@ class FiltroMosaico:
             Elimina los widgets creados
         """
         self.tkinter_app.deslizador.destroy()
+
+class FiltroBlur:
+
+    def __init__(self, tkinter_app) -> None:
+        self.nombre = "Filtro Blur"
+        self.filtro = filtro_blur
+        self.tkinter_app = tkinter_app
+
+    def aplicar_filtro(self, imagen):
+        self.tkinter_app.imagen_modificada = self.filtro(imagen, 3)
+        self.tkinter_app.mostrar_imagenes()
+        
+    def remover_widgets(self):
+        """
+            Elimina los widgets creados
+        """
+        pass
+       
+class FiltroMotionBlur:
+
+    def __init__(self, tkinter_app) -> None:
+        self.nombre = "Motion Blur"
+        self.filtro = filtro_motion_blur
+        self.tkinter_app = tkinter_app
+
+    def aplicar_filtro(self, imagen):
+        self.tkinter_app.imagen_modificada = self.filtro(imagen)
+        self.tkinter_app.mostrar_imagenes()
+        
+    def remover_widgets(self):
+        """
+            Elimina los widgets creados
+        """
+        pass
+
+class FiltroSharpen:
+
+    def __init__(self, tkinter_app) -> None:
+        self.nombre = "Sharpen"
+        self.filtro = filtro_sharpen
+        self.tkinter_app = tkinter_app
+
+    def aplicar_filtro(self, imagen):
+        self.imagen = imagen
+        self.crear_widget_lista()
+    
+    def crear_widget_lista(self):
+        """
+            Crea una lista para poder seleccionar el tipo de sharpen
+        """
+        opciones = ['soft', 'normal', 'hard']
+        self.tkinter_app.lista = ttk.Combobox(self.tkinter_app, state='readonly', values=opciones)                
+        # Segunda opcion por defecto
+        self.tkinter_app.lista.current(1)
+        # Evento de cambio
+        self.tkinter_app.lista.bind("<<ComboboxSelected>>", self.on_select)        
+        # Lo mostramos en la interfaz
+        self.tkinter_app.lista.pack(pady=12)
+        # Aplicamos el filtro por defecto
+        filtro_seleccionado = self.tkinter_app.lista.get()
+        self.tkinter_app.imagen_modificada = self.filtro(self.imagen, filtro_seleccionado)
+        self.tkinter_app.mostrar_imagenes()
+        
+    def on_select(self, event):
+        filtro_seleccionado = self.tkinter_app.lista.get()
+        self.tkinter_app.imagen_modificada = self.filtro(self.imagen, filtro_seleccionado)
+        self.tkinter_app.mostrar_imagenes()
+
+    def remover_widgets(self):
+        """
+            Elimina los widgets creados
+        """
+        self.tkinter_app.lista.destroy()
+
+class FiltroPromedio:
+
+    def __init__(self, tkinter_app) -> None:
+        self.nombre = "Promedio"
+        self.filtro = filtro_promedio
+        self.tkinter_app = tkinter_app
+
+    def aplicar_filtro(self, imagen):
+        self.tkinter_app.imagen_modificada = self.filtro(imagen)
+        self.tkinter_app.mostrar_imagenes()
+        
+    def remover_widgets(self):
+        """
+            Elimina los widgets creados
+        """
+        pass
